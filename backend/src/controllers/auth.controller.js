@@ -1,6 +1,7 @@
 import User from "../models/User.js"
 import jwt from "jsonwebtoken"
 import "dotenv/config"
+import { upsertStreamUser } from "../lib/stream.js";
 
 
 export const signup = async (req, res) => {
@@ -41,6 +42,19 @@ export const signup = async (req, res) => {
         });
 
         await newUser.save();
+
+        try {
+            await upsertStreamUser({
+            id : newUser._id.toString(),
+            name :  newUser.fullName,
+            image : newUser.profilePic || ""
+
+        })
+        console.log("Stream user created successfully")
+        } catch (error) {
+            console.log("Error in create stream user")
+        }
+       
 
         // 6. Generate token
         const token = jwt.sign(
